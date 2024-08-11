@@ -15,6 +15,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 red = (255, 0, 0)
 green = (0, 255, 0)
+blue = (0, 0, 255)
 
 # Car dimensions
 car_width = 50
@@ -42,6 +43,7 @@ lap_count = 0
 distance_covered = 0
 start_time = time.time()
 lap_times = []
+pitstop_duration = 3  # seconds
 
 # Font
 font = pygame.font.SysFont(None, 25)
@@ -83,9 +85,7 @@ def game_loop():
                         car_x = (screen_width * 0.45)
                         car_y = (screen_height * 0.8)
                         distance_covered = 0
-                        # lap_count = 0
                         obstacles = generate_obstacles(num_obstacles)
-
                         start_time = start_time - 5
                         game_over = False
 
@@ -130,6 +130,12 @@ def game_loop():
                 # Clock the lap time
                 lap_time = time.time() - start_time
                 lap_times.append(lap_time)
+
+                # Pitstop: Stop the car and wait for pitstop duration
+                display_message("Pitstop... Service in Progress!", [screen_width / 2 - 100, screen_height / 2])
+                pygame.display.update()
+                time.sleep(pitstop_duration)
+
                 start_time = time.time()
 
             # Draw finish line for lap
@@ -142,7 +148,7 @@ def game_loop():
             screen.fill(black)
             display_message("You Finished the Game!", [screen_width / 2 - 100, screen_height / 2])
             pygame.display.update()
-            pygame.time.wait(20000)
+            pygame.time.wait(2000)
             game_exit = True
 
         # Display the overall time and lap times
