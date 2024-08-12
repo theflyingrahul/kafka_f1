@@ -1,7 +1,9 @@
 from confluent_kafka import Producer
 import socket
 
-conf = {'bootstrap.servers': '172.16.100.97:9093',
+conf = {'bootstrap.servers': '172.16.100.97:9092',
+        'default.topic.config': {'api.version.request': True},
+        'security.protocol': 'PLAINTEXT',
         'client.id': socket.gethostname()}
 
 producer = Producer(conf)
@@ -12,8 +14,8 @@ def acked(err, msg):
     else:
         print("Message produced: %s" % (str(msg)))
 
-producer.produce("test-topic", key="key", value="value", callback=acked)
+def produce_message(topic, key, value):
+    producer.produce(topic, key=key, value=value, callback=acked)
+    producer.flush()
 
-# Wait up to 1 second for events. Callbacks will be invoked during
-# this method call if the message is acknowledged.
-producer.poll(5)
+produce_message('my-topic', 'my-key', 'my-value')
