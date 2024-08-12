@@ -12,30 +12,28 @@ conf = {'bootstrap.servers': '172.16.100.97:9092',
 
 consumer = Consumer(conf)
 
-running = True
+def consume_loop(topic):    
+    # Subscribe to the Kafka topic
+    consumer.subscribe([topic])
 
-def basic_consume_loop(consumer, topics):
     try:
-        consumer.subscribe(topics)
+        while True:
+            msg = consumer.poll(0.5)
 
-        while running:
-            msg = consumer.poll(timeout=1.0)
-            if msg is None: continue
-
+            if msg is None:
+                continue
             if msg.error():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
-                    # End of partition event
-                    sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
-                                     (msg.topic(), msg.partition(), msg.offset()))
-                elif msg.error():
-                    raise KafkaException(msg.error())
+                    continue
+                else:
+                    print(f'Error while consuming: {msg.error()}')
             else:
-                msg_process(msg)
+                # Parse the received message
+                value = msg.value().decode('utf-8')
+                print(value)
+
+    except KeyboardInterrupt:
+        pass
     finally:
-        # Close down consumer to commit final offsets.
+        # Close the consumer gracefully
         consumer.close()
-
-def shutdown():
-    running = False
-
-basic_consume_loop(consumer, ['my-topic'])

@@ -2,6 +2,10 @@ import pygame
 import random
 import time
 
+# Initialize team name
+team = "red_bull"
+player_name = "verstappen"
+
 # Initialize Pygame
 pygame.init()
 

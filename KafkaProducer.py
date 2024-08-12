@@ -17,5 +17,3 @@ def acked(err, msg):
 def produce_message(topic, key, value):
     producer.produce(topic, key=key, value=value, callback=acked)
     producer.flush()
-
-produce_message('my-topic', 'my-key', 'my-value')
