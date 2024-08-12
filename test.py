@@ -1,2 +1,2 @@
 from KafkaProducer import produce_message
-produce_message('my-topic', 'my-key', 'my-value')
+produce_message('redbull_distance', 'my-key', 'hamilton: 1.5s ahead')

@@ -10,15 +10,16 @@ conf = {'bootstrap.servers': '172.16.100.97:9092',
         'group.id': 'foo',
         'auto.offset.reset': 'smallest'}
 
-consumer = Consumer(conf)
 
-def consume_loop(topic):    
+def consume_loop(topic):
+    consumer = Consumer(conf)
+
     # Subscribe to the Kafka topic
     consumer.subscribe([topic])
 
     try:
         while True:
-            msg = consumer.poll(0.5)
+            msg = consumer.poll(1)
 
             if msg is None:
                 continue
@@ -30,10 +31,12 @@ def consume_loop(topic):
             else:
                 # Parse the received message
                 value = msg.value().decode('utf-8')
-                print(value)
+                return value
 
     except KeyboardInterrupt:
         pass
     finally:
         # Close the consumer gracefully
         consumer.close()
+
+print(consume_loop("redbull_distance"))
