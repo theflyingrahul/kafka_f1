@@ -4,9 +4,10 @@ import time
 
 from KafkaProducer import asynchronous_produce_message, synchronous_produce_message
 
-# Initialize team name
-team = "redbull"
-player_name = "verstappen"
+from confluent_kafka import Consumer
+from confluent_kafka import KafkaError, KafkaException
+import sys
+import socket
 
 # Initialize Pygame
 pygame.init()
@@ -60,6 +61,62 @@ pitstop_requested = False  # Track pitstop requests
 
 # Font
 font = pygame.font.SysFont(None, 25)
+
+# Initialize team name
+team = "redbull"
+player_name = "verstappen"
+
+### Helper Consumer Functions for Pitstop ###
+
+conf = {'bootstrap.servers': '172.16.100.97:9092',
+        'default.topic.config': {'api.version.request': True},
+        'security.protocol': 'PLAINTEXT',
+        'client.id': socket.gethostname(),
+        'group.id': 'game',
+        'enable.auto.commit':'false',
+        'auto.offset.reset': 'latest'}
+
+
+def consume_pitstop():
+    global team, fuel, tyre_health
+    consumer = Consumer(conf)
+
+    # Subscribe to the Kafka topic
+    consumer.subscribe(["redbull_pitstop"])
+
+    try:
+        while True:
+            msg = consumer.poll(1)
+
+            if msg is None:
+                print("No message received")
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    print("End of partition reached")
+                    continue
+                else:
+                    print(f'Error while consuming: {msg.error()}')
+            else:
+                # Parse the received message
+                value = msg.value().decode('utf-8')
+                break
+
+        print(value)
+        print(f"Fuel: {fuel}, Tyre Health: {tyre_health}")
+
+        fuel += int(value.split()[0])
+        tyre_health += int(value.split()[1])
+        print(f"Fuel: {fuel}, Tyre Health: {tyre_health}")
+
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Close the consumer gracefully
+        consumer.close()
+
+### Helper Consumer Functions for Pitstop ###
 
 def display_message(text, position):
     screen_text = font.render(text, True, white)
@@ -184,10 +241,11 @@ def game_loop():
                 lap_times.append(lap_time)
 
                 # Perform pitstop only if requested
-                if pitstop_requested:
+                if pitstop_requested and lap_count < 4:
+                    synchronous_produce_message(f"{team}_pitstop", 'key', 'at_pitstop')
                     display_message("Pitstop... Service in Progress!", [screen_width / 2 - 100, screen_height / 2])
                     pygame.display.update()
-                    time.sleep(pitstop_duration)
+                    consume_pitstop()  # Wait for pitstop to complete                    
                     pitstop_requested = False  # Reset pitstop request after servicing
 
                 start_time = time.time()
@@ -202,7 +260,7 @@ def game_loop():
             screen.fill(black)
             display_message("You Finished the Game!", [screen_width / 2 - 100, screen_height / 2])
             pygame.display.update()
-            pygame.time.wait(2000)
+            pygame.time.wait(20000)
             game_exit = True
 
         # Display the overall time and lap times
