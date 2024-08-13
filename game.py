@@ -222,7 +222,7 @@ def game_loop():
         pygame.display.update()
         
         asynchronous_produce_message(f"{team}_distance", 'key', f"{player_name}: Lap {lap_count} / {distance_covered}m")
-        asynchronous_produce_message(f"{team}_time", 'key', "{:.3f}".format(elapsed_time))
+        asynchronous_produce_message(f"{team}_time", 'key', "{:.3f}s".format(elapsed_time))
         asynchronous_produce_message(f"{team}_fuel", 'key', "{:.2f}".format(fuel))
         asynchronous_produce_message(f"{team}_tyre", 'key', "{:.2f}".format(tyre_health))
         asynchronous_produce_message(f"{team}_speed", 'key', f"{car_speed}")
