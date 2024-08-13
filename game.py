@@ -115,7 +115,6 @@ def game_loop():
                         car_x = (screen_width * 0.45)
                         car_y = (screen_height * 0.8)
                         obstacles = generate_obstacles(num_obstacles)
-                        start_time = start_time - 5  # Deduct 5 seconds from the start time
                         game_over = False
                         crash_not_updated = True
 
@@ -136,7 +135,7 @@ def game_loop():
                 if event.key == pygame.K_F1:
                     pitstop_requested = True  # Mark pitstop request
                     print(f"{team}_pitstop: Pitstop requested!")
-                    synchronous_produce_message(f"{team}_pitstop", 'key', 'pitstop_requested')
+                    asynchronous_produce_message(f"{team}_pitstop", 'key', 'pitstop_requested')
 
 
         if car_x > screen_width - car_width or car_x < 0:
@@ -162,13 +161,14 @@ def game_loop():
             # Update fuel and tyre health
             fuel -= 0.005 * (meters_per_frame + car_speed)  # Reduced depletion rate
             if tyre_health>0: tyre_health -= 0.01 * (meters_per_frame + car_speed)  # Reduced depletion rate
+            else: tyre_health = 0
 
             # End game if fuel is 0
             if fuel <= 0:
                 game_over = True
                 display_message("Out of Fuel! Game Over!", [screen_width / 2 - 150, screen_height / 2])
                 pygame.display.update()
-                pygame.time.wait(2000)
+                pygame.time.wait(20000)
                 break
 
             # Limit speed to 1 if tyre health is 0
@@ -206,7 +206,7 @@ def game_loop():
             game_exit = True
 
         # Display the overall time and lap times
-        elapsed_time = sum(lap_times) + (time.time() - start_time if not game_over else 0)
+        elapsed_time = sum(lap_times) + (time.time() - start_time) + 5 * crash_count
         display_message(f"Total Time: {int(elapsed_time)}s", [10, 10])
 
         for i, lap_time in enumerate(lap_times):
@@ -222,8 +222,9 @@ def game_loop():
         pygame.display.update()
         
         asynchronous_produce_message(f"{team}_distance", 'key', f"{player_name}: Lap {lap_count} / {distance_covered}m")
-        asynchronous_produce_message(f"{team}_fuel", 'key', f"{fuel}")
-        asynchronous_produce_message(f"{team}_tyre", 'key', f"{tyre_health}")
+        asynchronous_produce_message(f"{team}_time", 'key', "{:.3f}".format(elapsed_time))
+        asynchronous_produce_message(f"{team}_fuel", 'key', "{:.2f}".format(fuel))
+        asynchronous_produce_message(f"{team}_tyre", 'key', "{:.2f}".format(tyre_health))
         asynchronous_produce_message(f"{team}_speed", 'key', f"{car_speed}")
 
         clock.tick(60)
