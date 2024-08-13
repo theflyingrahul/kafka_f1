@@ -13,7 +13,7 @@ conf = {'bootstrap.servers': '172.16.100.97:9092',
         'default.topic.config': {'api.version.request': True},
         'security.protocol': 'PLAINTEXT',
         'client.id': socket.gethostname(),
-        'group.id': 'foo',
+        'group.id': 'dashboard',
         'enable.auto.commit':'false',
         'auto.offset.reset': 'latest'}
 

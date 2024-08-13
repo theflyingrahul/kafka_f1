@@ -82,7 +82,7 @@ def consume_pitstop():
     consumer = Consumer(conf)
 
     # Subscribe to the Kafka topic
-    consumer.subscribe(["redbull_pitstop"])
+    consumer.subscribe([f"{team}_pitstop"])
 
     try:
         while True:

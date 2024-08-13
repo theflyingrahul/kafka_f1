@@ -1,0 +1,16 @@
+docker compose exec --workdir /opt/kafka/bin/ -it broker sh
+
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_distance
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_fuel
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_tyre
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_pitstop
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_speed
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_crash
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_time
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_distance
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_fuel
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_tyre
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_pitstop
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_speed
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_crash
+./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic mercedes_time
