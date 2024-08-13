@@ -2,8 +2,10 @@ import pygame
 import random
 import time
 
+from KafkaProducer import produce_message
+
 # Initialize team name
-team = "red_bull"
+team = "redbull"
 player_name = "verstappen"
 
 # Initialize Pygame
@@ -33,14 +35,15 @@ car_img = pygame.transform.scale(car_img, (car_width, car_height))
 clock = pygame.time.Clock()
 car_x = (screen_width * 0.45)
 car_y = (screen_height * 0.8)
-car_speed = 5
+car_speed = 1  # Starting speed
+max_speed = 6  # Maximum speed
 obstacle_speed = 7
 obstacle_width = 50
 obstacle_height = 50
 num_obstacles = 3
 obstacles = []
 
-lap_distance = 2000  # meters
+lap_distance = 6000  # meters
 laps_to_finish = 5
 meters_per_frame = 5
 lap_count = 0
@@ -48,6 +51,11 @@ distance_covered = 0
 start_time = time.time()
 lap_times = []
 pitstop_duration = 3  # seconds
+
+# Fuel and Tyre Health
+fuel = 100  # in percentage
+tyre_health = 100  # in percentage
+pitstop_requested = False  # Track pitstop requests
 
 # Font
 font = pygame.font.SysFont(None, 25)
@@ -63,8 +71,18 @@ def draw_obstacles(obstacles):
 def generate_obstacles(num):
     return [{'x': random.randrange(0, screen_width - obstacle_width), 'y': -600 * i} for i in range(num)]
 
+def draw_fuel_bar(fuel):
+    pygame.draw.rect(screen, red, [screen_width / 2 - 100, 10, 200, 20])
+    pygame.draw.rect(screen, green, [screen_width / 2 - 100, 10, 2 * fuel, 20])
+    display_message("Fuel", [screen_width / 2 - 150, 10])
+
+def draw_tyre_health_bar(tyre_health):
+    pygame.draw.rect(screen, red, [screen_width / 2 - 100, 40, 200, 20])
+    pygame.draw.rect(screen, green, [screen_width / 2 - 100, 40, 2 * tyre_health, 20])
+    display_message("Tyre Health", [screen_width / 2 - 150, 40])
+
 def game_loop():
-    global car_x, car_y, car_speed, lap_count, distance_covered, obstacles, start_time, lap_times
+    global car_x, car_y, car_speed, lap_count, distance_covered, obstacles, start_time, lap_times, fuel, tyre_health, pitstop_requested
 
     game_exit = False
     game_over = False
@@ -88,9 +106,8 @@ def game_loop():
                     if event.key == pygame.K_r:
                         car_x = (screen_width * 0.45)
                         car_y = (screen_height * 0.8)
-                        distance_covered = 0
                         obstacles = generate_obstacles(num_obstacles)
-                        start_time = start_time - 5
+                        start_time = start_time - 5  # Deduct 5 seconds from the start time
                         game_over = False
 
         for event in pygame.event.get():
@@ -103,9 +120,15 @@ def game_loop():
                 if event.key == pygame.K_RIGHT:
                     car_x += 30
                 if event.key == pygame.K_UP:
-                    car_speed += 1
+                    if tyre_health > 0 and car_speed < max_speed:
+                        car_speed += 1
                 if event.key == pygame.K_DOWN:
                     car_speed = max(1, car_speed - 1)  # Ensure speed doesn't go below 1
+                if event.key == pygame.K_F1:
+                    pitstop_requested = True  # Mark pitstop request
+                    print(f"{team}_pitstop: Pitstop requested!")
+                    produce_message(f"{team}_pitstop", 'key', 'pitstop_requested')
+
 
         if car_x > screen_width - car_width or car_x < 0:
             game_over = True
@@ -127,6 +150,22 @@ def game_loop():
         if not game_over:
             distance_covered += meters_per_frame + car_speed
 
+            # Update fuel and tyre health
+            fuel -= 0.005 * (meters_per_frame + car_speed)  # Reduced depletion rate
+            tyre_health -= 0.01 * (meters_per_frame + car_speed)  # Reduced depletion rate
+
+            # End game if fuel is 0
+            if fuel <= 0:
+                game_over = True
+                display_message("Out of Fuel! Game Over!", [screen_width / 2 - 150, screen_height / 2])
+                pygame.display.update()
+                pygame.time.wait(2000)
+                break
+
+            # Limit speed to 1 if tyre health is 0
+            if tyre_health <= 0:
+                car_speed = 1
+
             if distance_covered >= lap_distance:
                 lap_count += 1
                 distance_covered = 0
@@ -135,10 +174,12 @@ def game_loop():
                 lap_time = time.time() - start_time
                 lap_times.append(lap_time)
 
-                # Pitstop: Stop the car and wait for pitstop duration
-                display_message("Pitstop... Service in Progress!", [screen_width / 2 - 100, screen_height / 2])
-                pygame.display.update()
-                time.sleep(pitstop_duration)
+                # Perform pitstop only if requested
+                if pitstop_requested:
+                    display_message("Pitstop... Service in Progress!", [screen_width / 2 - 100, screen_height / 2])
+                    pygame.display.update()
+                    time.sleep(pitstop_duration)
+                    pitstop_requested = False  # Reset pitstop request after servicing
 
                 start_time = time.time()
 
@@ -164,6 +205,10 @@ def game_loop():
 
         display_message(f"Laps: {lap_count}/{laps_to_finish}", [screen_width - 150, 10])
         display_message(f"Speed: {car_speed}", [screen_width - 150, 40])
+
+        # Draw fuel and tyre health bars
+        draw_fuel_bar(fuel)
+        draw_tyre_health_bar(tyre_health)
 
         pygame.display.update()
 
