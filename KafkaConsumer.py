@@ -8,7 +8,8 @@ conf = {'bootstrap.servers': '172.16.100.97:9092',
         'security.protocol': 'PLAINTEXT',
         'client.id': socket.gethostname(),
         'group.id': 'foo',
-        'auto.offset.reset': 'smallest'}
+        'enable.auto.commit':'false',
+        'auto.offset.reset': 'latest'}
 
 
 def consume_loop(topic):

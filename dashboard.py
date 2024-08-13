@@ -2,25 +2,84 @@ import threading
 import tkinter as tk
 from time import sleep
 
-from KafkaConsumer import consume_loop
+from confluent_kafka import Consumer
+from confluent_kafka import KafkaError, KafkaException
+import sys
+import socket
+
+conf = {'bootstrap.servers': '172.16.100.97:9092',
+        'default.topic.config': {'api.version.request': True},
+        'security.protocol': 'PLAINTEXT',
+        'client.id': socket.gethostname(),
+        'group.id': 'foo',
+        'enable.auto.commit':'false',
+        'auto.offset.reset': 'latest'}
 
 # Boilerplate for Kafka consumer functions
 def redbull_distance(label):
-    # print(consume_loop("redbull_distance"))
-    text = consume_loop("redbull_distance")
-    print(text)
-    label.config(text=text)
+    consumer = Consumer(conf)
+
+    # Subscribe to the Kafka topic
+    consumer.subscribe(["redbull_distance"])
+
+    try:
+        while True:
+            msg = consumer.poll(1)
+
+            if msg is None:
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    continue
+                else:
+                    print(f'Error while consuming: {msg.error()}')
+            else:
+                # Parse the received message
+                value = msg.value().decode('utf-8')
+                label.config(text=value)
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Close the consumer gracefully
+        consumer.close()
 
 
 def mercedes_distance(label):
-    label.config(text=consume_loop("mercedes_distance"))
+    consumer = Consumer(conf)
+
+    # Subscribe to the Kafka topic
+    consumer.subscribe(["mercedes_distance"])
+
+    try:
+        while True:
+            msg = consumer.poll(1)
+
+            if msg is None:
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    continue
+                else:
+                    print(f'Error while consuming: {msg.error()}')
+            else:
+                # Parse the received message
+                value = msg.value().decode('utf-8')
+                label.config(text=value)
+
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Close the consumer gracefully
+        consumer.close()
+
+
 
 def kafka_consumer_3(label):
-    label.config(text=consume_loop("redbull_distance"))
-
+    label.config(text="redbull_distance")
 
 def kafka_consumer_4(label):
-    label.config(text=consume_loop("redbull_distance"))
+    label.config(text="redbull_distance")
 
 
 # Threaded function to update the dashboard
@@ -55,7 +114,7 @@ def create_dashboard():
 
     # Start consumer threads
     start_consumer_thread(redbull_distance, label_1)
-    # start_consumer_thread(mercedes_distance, label_2)
+    start_consumer_thread(mercedes_distance, label_2)
     # start_consumer_thread(kafka_consumer_3, label_3)
     # start_consumer_thread(kafka_consumer_4, label_4)
 
