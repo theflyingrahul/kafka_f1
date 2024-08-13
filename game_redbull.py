@@ -9,6 +9,10 @@ from confluent_kafka import KafkaError, KafkaException
 import sys
 import socket
 
+# Initialize team name
+team = "redbull"
+player_name = "verstappen"
+
 # Initialize Pygame
 pygame.init()
 
@@ -26,10 +30,10 @@ blue = (0, 0, 255)
 
 # Car dimensions
 car_width = 50
-car_height = 60
+car_height = 70
 
 # Load car image
-car_img = pygame.image.load('car.png')
+car_img = pygame.image.load(f"{team}.png")
 car_img = pygame.transform.scale(car_img, (car_width, car_height))
 
 # Game variables
@@ -61,10 +65,6 @@ pitstop_requested = False  # Track pitstop requests
 
 # Font
 font = pygame.font.SysFont(None, 25)
-
-# Initialize team name
-team = "redbull"
-player_name = "verstappen"
 
 ### Helper Consumer Functions for Pitstop ###
 
