@@ -7,7 +7,7 @@ import threading
 from confluent_kafka import Consumer, KafkaError
 import socket
 
-team = "redbull"
+team = "mercedes"
 at_pitstop = False
 current_fuel = 0
 current_tyre = 0
@@ -191,7 +191,7 @@ def start_consumer_tyre_thread():
 
 # Set up the GUI
 root = tk.Tk()
-root.title("F1 Pitstop Maintenance")
+root.title(f"F1 Pitstop Maintenance {team}")
 
 tk.Label(root, text="Refuel Units:").grid(row=0, column=0, padx=10, pady=5, sticky="e")
 refuel_slider = tk.Scale(root, from_=0, to=100-current_fuel, orient='horizontal', state='normal')

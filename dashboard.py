@@ -505,13 +505,13 @@ def create_dashboard():
     start_consumer_thread(redbull_speed, rb_speed_label)
     start_consumer_thread(redbull_crash, rb_crash_label)
 
-    # start_consumer_thread(mercedes_distance, mercedes_dist_label)
-    # start_consumer_thread(mercedes_time, rb_time_label)
-    # start_consumer_thread(mercedes_fuel, mercedes_fuel_label)
-    # start_consumer_thread(mercedes_tyre, mercedes_tyre_label)
-    # start_consumer_thread(mercedes_pitstop, mercedes_pitstop_label)
-    # start_consumer_thread(mercedes_speed, mercedes_speed_label)
-    # start_consumer_thread(mercedes_crash, mercedes_crash_label)
+    start_consumer_thread(mercedes_distance, mercedes_dist_label)
+    start_consumer_thread(mercedes_time, rb_time_label)
+    start_consumer_thread(mercedes_fuel, mercedes_fuel_label)
+    start_consumer_thread(mercedes_tyre, mercedes_tyre_label)
+    start_consumer_thread(mercedes_pitstop, mercedes_pitstop_label)
+    start_consumer_thread(mercedes_speed, mercedes_speed_label)
+    start_consumer_thread(mercedes_crash, mercedes_crash_label)
 
     # Start the GUI loop
     root.mainloop()
