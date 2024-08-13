@@ -2,7 +2,7 @@ import pygame
 import random
 import time
 
-from KafkaProducer import produce_message
+from KafkaProducer import asynchronous_produce_message, synchronous_produce_message
 
 # Initialize team name
 team = "redbull"
@@ -42,6 +42,7 @@ obstacle_width = 50
 obstacle_height = 50
 num_obstacles = 3
 obstacles = []
+crash_count = 0
 
 lap_distance = 6000  # meters
 laps_to_finish = 5
@@ -82,10 +83,12 @@ def draw_tyre_health_bar(tyre_health):
     display_message("Tyre Health", [screen_width / 2 - 150, 40])
 
 def game_loop():
-    global car_x, car_y, car_speed, lap_count, distance_covered, obstacles, start_time, lap_times, fuel, tyre_health, pitstop_requested
+    global car_x, car_y, car_speed, lap_count, distance_covered, obstacles, start_time, lap_times, fuel, tyre_health, pitstop_requested, crash_count
 
     game_exit = False
     game_over = False
+
+    crash_not_updated = True
 
     obstacles = generate_obstacles(num_obstacles)
 
@@ -93,6 +96,11 @@ def game_loop():
 
         while game_over:
             display_message("You crashed! Press R to Restart or Q to Quit", [screen_width / 2 - 150, screen_height / 2])
+            if crash_not_updated:
+                crash_not_updated = False
+                crash_count += 1
+                asynchronous_produce_message(f"{team}_crash", 'key', f"{crash_count}")
+
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -109,6 +117,7 @@ def game_loop():
                         obstacles = generate_obstacles(num_obstacles)
                         start_time = start_time - 5  # Deduct 5 seconds from the start time
                         game_over = False
+                        crash_not_updated = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -127,7 +136,7 @@ def game_loop():
                 if event.key == pygame.K_F1:
                     pitstop_requested = True  # Mark pitstop request
                     print(f"{team}_pitstop: Pitstop requested!")
-                    produce_message(f"{team}_pitstop", 'key', 'pitstop_requested')
+                    synchronous_produce_message(f"{team}_pitstop", 'key', 'pitstop_requested')
 
 
         if car_x > screen_width - car_width or car_x < 0:
@@ -152,7 +161,7 @@ def game_loop():
 
             # Update fuel and tyre health
             fuel -= 0.005 * (meters_per_frame + car_speed)  # Reduced depletion rate
-            tyre_health -= 0.01 * (meters_per_frame + car_speed)  # Reduced depletion rate
+            if tyre_health>0: tyre_health -= 0.01 * (meters_per_frame + car_speed)  # Reduced depletion rate
 
             # End game if fuel is 0
             if fuel <= 0:
@@ -211,6 +220,11 @@ def game_loop():
         draw_tyre_health_bar(tyre_health)
 
         pygame.display.update()
+        
+        asynchronous_produce_message(f"{team}_distance", 'key', f"{player_name}: Lap {lap_count} / {distance_covered}m")
+        asynchronous_produce_message(f"{team}_fuel", 'key', f"{fuel}")
+        asynchronous_produce_message(f"{team}_tyre", 'key', f"{tyre_health}")
+        asynchronous_produce_message(f"{team}_speed", 'key', f"{car_speed}")
 
         clock.tick(60)
 

@@ -14,6 +14,9 @@ def acked(err, msg):
     else:
         print("Message produced: %s" % (str(msg)))
 
-def produce_message(topic, key, value):
+def synchronous_produce_message(topic, key, value):
     producer.produce(topic, key=key, value=value, callback=acked)
     producer.flush()
+
+def asynchronous_produce_message(topic, key, value):
+    producer.produce(topic, key=key, value=value, callback=acked)

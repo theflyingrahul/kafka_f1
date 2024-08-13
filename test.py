@@ -1,4 +1,4 @@
-from KafkaProducer import produce_message
+from KafkaProducer import synchronous_produce_message
 
-produce_message('mercedes_distance', 'my-key', 'hamilton: 2.5s ahead')
-produce_message('redbull_distance', 'my-key', 'pitstop requested')
+synchronous_produce_message('mercedes_distance', 'my-key', 'hamilton: 2.5s ahead')
+synchronous_produce_message('redbull_distance', 'my-key', 'pitstop requested')
