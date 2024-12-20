@@ -33,7 +33,7 @@ car_width = 50
 car_height = 70
 
 # Load car image
-car_img = pygame.image.load(f"{team}.png")
+car_img = pygame.image.load(f"assets/{team}.png")
 car_img = pygame.transform.scale(car_img, (car_width, car_height))
 
 # Game variables

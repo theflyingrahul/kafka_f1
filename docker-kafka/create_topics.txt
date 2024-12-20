@@ -1,5 +1,7 @@
+# Log in to broker container
 docker compose exec --workdir /opt/kafka/bin/ -it broker sh
 
+# create topics
 ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_distance
 ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_fuel
 ./kafka-topics.sh --bootstrap-server localhost:9092 --create --topic redbull_tyre
