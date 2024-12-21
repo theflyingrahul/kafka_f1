@@ -1,2 +1,4 @@
+tk
+tkdesigner
 pygame
 confluent-kafka
